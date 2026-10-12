@@ -1,10 +1,12 @@
-package com.codewith.firstApp.apps;
+package com.codewith.firstApp.controllers;
 
-import java.util.HashMap;
 import java.util.*;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.bind.annotation.RestController;
+
+import com.codewith.firstApp.model.User;
 
 @RestController 
 @RequestMapping("/user")
@@ -16,22 +18,27 @@ public class UserController {
     //2)implement postmapping on a function that changes something
 
     @PostMapping
-    public String createUser(@RequestBody User user){
+    public ResponseEntity<User> createUser(@RequestBody User user){
         userDB.putIfAbsent(user.getid(),user);
-        return "User registered";
+        return new ResponseEntity<>(user,HttpStatus.CREATED);
+        
     }
 
     @PutMapping 
-    public String updateUser(@RequestBody User user){
-        if(userDB.containsKey(user.getid()))
-            userDB.put(user.getid(),user);
-        return "User Updated";
+    public ResponseEntity<User> updateUser(@RequestBody User user){
+        if(!userDB.containsKey(user.getid()))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        userDB.put(user.getid(),user);
+            return ResponseEntity.ok(user);
+
     }
 
     @DeleteMapping("/{id}")
-    public String deleteUser(@PathVariable int id){
-            userDB.remove(id);
-            return "User deleted";
+    public ResponseEntity<String> deleteUser(@PathVariable int id){
+        if(!userDB.containsKey(id))
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        userDB.remove(id);
+        return ResponseEntity.ok("User Deleted");
     }
 
     @GetMapping
